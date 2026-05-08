@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db } from "../config";
 import { enqueueAgentRun } from "../services/agentRun";
+import { assertCanStartRun } from "../services/usage";
 import type { Project } from "../../../shared/src/index";
 
 export const retryProject = onCall(async (request) => {
@@ -28,6 +29,8 @@ export const retryProject = onCall(async (request) => {
       `Retry only valid from error state (current: ${project.status})`,
     );
   }
+
+  await assertCanStartRun(request.auth.uid);
 
   await db.doc(`projects/${projectId}`).update({
     status: "planning",

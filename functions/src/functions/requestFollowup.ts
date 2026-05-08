@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db } from "../config";
 import { enqueueAgentRun } from "../services/agentRun";
+import { assertCanStartRun } from "../services/usage";
 import type { Project } from "../../../shared/src/index";
 
 export const requestFollowup = onCall(async (request) => {
@@ -32,6 +33,8 @@ export const requestFollowup = onCall(async (request) => {
       "Follow-ups require a completed report",
     );
   }
+
+  await assertCanStartRun(request.auth.uid);
 
   const runId = await enqueueAgentRun(
     projectId,

@@ -3,6 +3,7 @@ import { db } from "../config";
 import { getClarificationResponse } from "../services/claude";
 import { addMessage, getMessages } from "../services/conversation";
 import { enqueueAgentRun } from "../services/agentRun";
+import { assertCanStartRun } from "../services/usage";
 import type { Project } from "../../../shared/src/index";
 
 const REPORT_READY_RE = /<report_ready>\s*true\s*<\/report_ready>/i;
@@ -72,6 +73,7 @@ export const sendMessage = onCall(async (request) => {
   await addMessage(projectId, "assistant", visibleMessage, "clarification");
 
   if (reportReady) {
+    await assertCanStartRun(request.auth.uid);
     const runId = await enqueueAgentRun(projectId, request.auth.uid, "full");
     await projectRef.update({
       status: "planning",
