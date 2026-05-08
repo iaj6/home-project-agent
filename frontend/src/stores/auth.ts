@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   updateProfile,
   type User,
@@ -16,9 +17,23 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null);
 
   function init() {
-    onAuthStateChanged(auth, (firebaseUser) => {
-      user.value = firebaseUser;
-      loading.value = false;
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        user.value = firebaseUser;
+        loading.value = false;
+        return;
+      }
+      // No session — auto-sign-in anonymously so the demo URL has zero friction.
+      // The resulting UID persists in localStorage, so projects survive reloads
+      // (but not browser-data clears or different browsers).
+      try {
+        const cred = await signInAnonymously(auth);
+        user.value = cred.user;
+      } catch (e) {
+        error.value = e instanceof Error ? e.message : String(e);
+      } finally {
+        loading.value = false;
+      }
     });
   }
 
