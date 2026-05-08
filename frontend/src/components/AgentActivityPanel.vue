@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { AgentRun, AgentStep } from '@home-advisor/shared';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import type { AgentPhase, AgentRun, AgentStep } from '@home-advisor/shared';
 
 const props = defineProps<{
   run: AgentRun | null;
@@ -15,6 +15,13 @@ const recent = computed(() => {
   return [...props.steps].sort((a, b) => b.index - a.index).slice(0, 6).reverse();
 });
 
+const PHASES: { key: AgentPhase; label: string }[] = [
+  { key: 'plan', label: 'Plan' },
+  { key: 'price', label: 'Price' },
+  { key: 'labor', label: 'Labor' },
+  { key: 'synthesize', label: 'Report' },
+];
+
 const phaseLabel = computed(() => {
   if (!props.run?.phase) return props.run?.status ?? '';
   switch (props.run.phase) {
@@ -24,6 +31,39 @@ const phaseLabel = computed(() => {
     case 'synthesize': return 'Writing the report';
     default: return props.run.phase;
   }
+});
+
+function phaseState(p: AgentPhase): 'pending' | 'active' | 'done' {
+  const order: AgentPhase[] = ['plan', 'price', 'labor', 'synthesize'];
+  if (props.run?.status === 'complete') return 'done';
+  const current = props.run?.phase;
+  if (!current) return 'pending';
+  const ci = order.indexOf(current);
+  const pi = order.indexOf(p);
+  if (pi < ci) return 'done';
+  if (pi === ci) return 'active';
+  return 'pending';
+}
+
+// Live elapsed timer for an active run.
+const now = ref(Date.now());
+let interval: ReturnType<typeof setInterval> | null = null;
+onMounted(() => {
+  interval = setInterval(() => { now.value = Date.now(); }, 1000);
+});
+onUnmounted(() => { if (interval) clearInterval(interval); });
+
+const elapsed = computed(() => {
+  if (!props.run?.startedAt) return null;
+  const startMs = (props.run.startedAt as unknown as { toMillis?: () => number }).toMillis?.()
+    ?? new Date(props.run.startedAt as unknown as string | number | Date).getTime();
+  const endMs = props.run.completedAt
+    ? ((props.run.completedAt as unknown as { toMillis?: () => number }).toMillis?.()
+       ?? new Date(props.run.completedAt as unknown as string | number | Date).getTime())
+    : now.value;
+  const sec = Math.max(0, Math.round((endMs - startMs) / 1000));
+  if (sec < 60) return `${sec}s`;
+  return `${Math.floor(sec / 60)}m ${sec % 60}s`;
 });
 
 function stepIcon(kind: AgentStep['kind']) {
@@ -51,12 +91,26 @@ function stepIcon(kind: AgentStep['kind']) {
         <div class="meta">
           <div class="phase">{{ phaseLabel }}</div>
           <div class="sub">
-            <span v-if="run">${{ (run.estimatedCostUsd ?? 0).toFixed(3) }} · {{ run.toolCallCount ?? 0 }} tool calls</span>
-            <span v-else>Waiting for agent…</span>
+            <span v-if="run">
+              {{ elapsed ?? '' }} · ${{ (run.estimatedCostUsd ?? 0).toFixed(3) }} · {{ run.toolCallCount ?? 0 }} tool calls
+            </span>
+            <span v-else>Queued — agent picking up shortly…</span>
           </div>
         </div>
       </div>
       <button v-if="!showFull && run" class="open-full" @click="emit('open-full')">Show full trace →</button>
+    </div>
+
+    <div v-if="run" class="phase-stepper">
+      <div
+        v-for="(p, i) in PHASES"
+        :key="p.key"
+        class="ph"
+        :class="phaseState(p.key)"
+      >
+        <span class="ph-num">{{ i + 1 }}</span>
+        <span class="ph-label">{{ p.label }}</span>
+      </div>
     </div>
 
     <ol class="steps">
@@ -138,6 +192,69 @@ function stepIcon(kind: AgentStep['kind']) {
 .open-full:hover {
   text-decoration: underline;
 }
+.phase-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+}
+.ph {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+.ph + .ph::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--border);
+  margin-right: 0.25rem;
+}
+.ph .ph-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 0.7rem;
+}
+.ph.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  animation: phase-pulse 1.4s ease-in-out infinite;
+}
+.ph.active .ph-num {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.ph.done {
+  color: var(--success, #5a9b5a);
+}
+.ph.done .ph-num {
+  background: var(--success, #5a9b5a);
+  border-color: var(--success, #5a9b5a);
+  color: white;
+}
+@keyframes phase-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .steps {
   list-style: none;
   padding: 0;

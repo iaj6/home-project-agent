@@ -46,6 +46,48 @@ const durationLabel = computed(() => {
   const sec = Math.round((end.getTime() - start.getTime()) / 1000);
   return `${sec}s`;
 });
+
+// Categorize the raw error string into a friendly headline + remediation hint.
+// The full text is still shown in a collapsible <details> so we never hide info.
+const friendlyError = computed(() => {
+  const raw = projectStore.currentRun?.errorMessage ?? '';
+  if (!raw) return null;
+
+  if (/parsed_output|did not return valid JSON|stop_reason/i.test(raw)) {
+    return {
+      title: 'The agent had trouble formatting its final output.',
+      hint: 'This usually clears on retry. The plan/price/labor work it did already is preserved.',
+    };
+  }
+  if (/429|rate.?limit|too many requests/i.test(raw)) {
+    return {
+      title: 'An upstream service rate-limited us.',
+      hint: 'Wait a minute and retry — the limit usually clears within 60 seconds.',
+    };
+  }
+  if (/crawlbase|home.?depot|fetch_home_depot_sku/i.test(raw)) {
+    return {
+      title: 'A retailer fetch hiccupped.',
+      hint: 'Home Depot or our fetcher proxy returned an error. Retrying usually picks a different proxy and clears it.',
+    };
+  }
+  if (/ECONN|ETIMED|fetch failed|network/i.test(raw)) {
+    return {
+      title: "Network error reaching an upstream service.",
+      hint: "Check your connection or try again in a moment.",
+    };
+  }
+  if (/budget|maxInputTokens|maxToolCalls/i.test(raw)) {
+    return {
+      title: "The agent hit its compute budget mid-run.",
+      hint: "This is rare and usually a sign that the project is unusually complex. Retry if you'd like another attempt.",
+    };
+  }
+  return {
+    title: 'The agent run failed unexpectedly.',
+    hint: 'Retry usually clears it. If the same error keeps coming up, the project may be hitting an edge case worth flagging.',
+  };
+});
 </script>
 
 <template>
@@ -90,9 +132,13 @@ const durationLabel = computed(() => {
       :show-full="true"
     />
 
-    <div v-if="projectStore.currentRun?.errorMessage" class="error-box">
-      <strong>Error:</strong>
-      <code>{{ projectStore.currentRun.errorMessage }}</code>
+    <div v-if="friendlyError" class="error-box">
+      <div class="err-headline">{{ friendlyError.title }}</div>
+      <div class="err-hint">{{ friendlyError.hint }}</div>
+      <details class="err-details">
+        <summary>Show technical detail</summary>
+        <code>{{ projectStore.currentRun?.errorMessage }}</code>
+      </details>
       <div class="retry-row">
         <button class="retry-btn" :disabled="retrying" @click="retry">
           {{ retrying ? 'Retrying…' : 'Retry agent run' }}
@@ -182,13 +228,43 @@ const durationLabel = computed(() => {
   border: 1px solid var(--danger);
   border-radius: var(--radius-md);
 }
-.error-box code {
+.err-headline {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--danger);
+  margin-bottom: 0.3rem;
+}
+.err-hint {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+}
+.err-details {
+  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+}
+.err-details summary {
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  user-select: none;
+}
+.err-details summary:hover { color: var(--text-secondary); }
+.err-details code {
   display: block;
-  margin-top: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--danger);
   white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
 }
 .retry-row {
   display: flex;
