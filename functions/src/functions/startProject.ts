@@ -1,5 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { db } from "../config";
+import { db, ANTHROPIC_API_KEY_SECRET } from "../config";
 import { getClarificationResponse } from "../services/claude";
 import { addMessage } from "../services/conversation";
 import { ensureHome } from "../services/home";
@@ -10,7 +10,7 @@ import type {
 } from "../../../shared/src/index";
 import { CATEGORY_IDS } from "../../../shared/src/constants/categories";
 
-export const startProject = onCall(async (request) => {
+export const startProject = onCall({ secrets: [ANTHROPIC_API_KEY_SECRET] }, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Must be logged in to start a project");
   }

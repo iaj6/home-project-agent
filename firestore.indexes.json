@@ -17,10 +17,11 @@
       ]
     },
     {
-      "collectionGroup": "steps",
+      "collectionGroup": "agentRuns",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "index", "order": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
       ]
     }
   ],
