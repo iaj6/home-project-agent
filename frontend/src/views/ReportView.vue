@@ -8,21 +8,31 @@ import MaterialsCart from '../components/MaterialsCart.vue';
 import LaborEstimate from '../components/LaborEstimate.vue';
 import TradeoffCard from '../components/TradeoffCard.vue';
 import ConfidenceBadge from '../components/ConfidenceBadge.vue';
+import { SAMPLE_PROJECT, SAMPLE_REPORT } from '../data/sample-report';
 
 const route = useRoute();
 const router = useRouter();
 const projectStore = useProjectStore();
 
-const projectId = route.params.id as string;
+const isSample = computed(() => route.name === 'sample');
+const projectId = computed(() =>
+  isSample.value ? SAMPLE_PROJECT.id : (route.params.id as string),
+);
 
 onMounted(() => {
-  projectStore.fetchProject(projectId);
-  projectStore.subscribeToProject(projectId);
+  if (isSample.value) return;
+  projectStore.fetchProject(projectId.value);
+  projectStore.subscribeToProject(projectId.value);
 });
 
 onUnmounted(() => {
+  if (isSample.value) return;
   projectStore.unsubscribeProject();
 });
+
+const project = computed(() =>
+  isSample.value ? SAMPLE_PROJECT : project,
+);
 
 function currency(n: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -32,8 +42,10 @@ function currency(n: number): string {
   }).format(n);
 }
 
-const hasReport = computed(() => !!projectStore.currentReport);
-const report = computed(() => projectStore.currentReport);
+const report = computed(() =>
+  isSample.value ? SAMPLE_REPORT : projectStore.currentReport,
+);
+const hasReport = computed(() => !!report.value);
 
 const videoResources = computed(() =>
   (report.value?.resources ?? []).filter((r) => r.type === 'video' && r.videoId),
@@ -52,12 +64,16 @@ function formatViews(n: number): string {
 <template>
   <div class="report">
     <div class="report-header">
-      <button class="back-btn" @click="router.push(`/project/${projectId}`)">
+      <button class="back-btn" @click="router.push(isSample ? '/' : `/project/${projectId}`)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        Back to Conversation
+        {{ isSample ? 'Back to Home' : 'Back to Conversation' }}
       </button>
+      <div v-if="isSample" class="sample-banner">
+        <strong>Sample report.</strong> This is what a finished plan looks like.
+        <button class="sample-cta" @click="router.push('/new')">Make your own →</button>
+      </div>
       <div class="report-title-row">
         <div class="report-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -68,14 +84,14 @@ function formatViews(n: number): string {
           </svg>
         </div>
         <div class="title-meta">
-          <h1>{{ projectStore.currentProject?.title }}</h1>
+          <h1>{{ project?.title }}</h1>
           <p class="report-subtitle">Project Blueprint</p>
         </div>
         <div class="header-actions">
           <button
-            v-if="projectStore.currentProject?.currentAgentRunId"
+            v-if="project?.currentAgentRunId"
             class="trace-btn"
-            @click="router.push(`/project/${projectId}/run/${projectStore.currentProject?.currentAgentRunId}`)"
+            @click="router.push(`/project/${projectId}/run/${project?.currentAgentRunId}`)"
           >
             Show work
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,7 +102,7 @@ function formatViews(n: number): string {
       </div>
     </div>
 
-    <div v-if="projectStore.loading" class="loading">
+    <div v-if="!isSample && projectStore.loading" class="loading">
       <div class="loading-pulse"></div>
       <span>Loading report…</span>
     </div>
@@ -209,8 +225,8 @@ function formatViews(n: number): string {
 
     <div v-else class="empty">
       Report not yet available.
-      <p v-if="projectStore.currentProject?.status && ['planning', 'pricing', 'synthesizing'].includes(projectStore.currentProject.status)">
-        The agent is working on it — status: <strong>{{ projectStore.currentProject.status }}</strong>.
+      <p v-if="project?.status && ['planning', 'pricing', 'synthesizing'].includes(project.status)">
+        The agent is working on it — status: <strong>{{ project.status }}</strong>.
       </p>
     </div>
   </div>
@@ -226,6 +242,32 @@ function formatViews(n: number): string {
 .report-header {
   margin-bottom: 2rem;
 }
+
+.sample-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--primary-light, #fff7e8);
+  border: 1px solid var(--primary, #c97e3a);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+.sample-cta {
+  margin-left: auto;
+  padding: 0.35rem 0.85rem;
+  border: none;
+  background: var(--primary, #c97e3a);
+  color: white;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.sample-cta:hover { background: var(--primary-hover, #a66427); }
 
 .back-btn {
   display: inline-flex;

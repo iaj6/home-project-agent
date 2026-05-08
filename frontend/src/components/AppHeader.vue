@@ -8,7 +8,7 @@ const authStore = useAuthStore();
 
 async function handleLogout() {
   await authStore.logout();
-  router.push('/login');
+  router.push('/');
 }
 </script>
 
@@ -27,8 +27,8 @@ async function handleLogout() {
         </span>
         <nav v-if="authStore.user">
           <button
-            :class="{ active: route.path === '/' }"
-            @click="router.push('/')"
+            :class="{ active: route.path === '/dashboard' }"
+            @click="router.push('/dashboard')"
           >Dashboard</button>
           <button
             :class="{ active: route.path === '/new' }"
@@ -37,7 +37,8 @@ async function handleLogout() {
         </nav>
       </div>
       <div v-if="authStore.user" class="right">
-        <span class="email">{{ authStore.user.email }}</span>
+        <span v-if="authStore.user.email" class="email">{{ authStore.user.email }}</span>
+        <span v-else class="email muted">guest session</span>
         <button class="logout-btn" @click="handleLogout">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -142,6 +143,7 @@ nav button.active {
   color: var(--text-tertiary);
   font-family: var(--font-body);
 }
+.email.muted { font-style: italic; opacity: 0.7; }
 
 .logout-btn {
   display: flex;
