@@ -42,6 +42,12 @@ service cloud.firestore {
       }
     }
 
+    // Usage counters (cost-cap bookkeeping). Server-only; clients have no
+    // read or write access. The admin SDK in functions enforces caps directly.
+    match /usage/{docId} {
+      allow read, write: if false;
+    }
+
     match /agentRuns/{runId} {
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow list: if isSignedIn()
