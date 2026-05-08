@@ -1,0 +1,38 @@
+{
+  "name": "@home-advisor/agent-worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "lib/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node lib/server.js",
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke": "tsx scripts/smoke-agent.ts",
+    "cassette:record": "CASSETTE_MODE=record tsx scripts/record-cassettes.ts"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.93.0",
+    "@home-advisor/shared": "*",
+    "@hono/node-server": "^1.13.0",
+    "firebase-admin": "^13.0.0",
+    "hono": "^4.6.0",
+    "playwright": "^1.49.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

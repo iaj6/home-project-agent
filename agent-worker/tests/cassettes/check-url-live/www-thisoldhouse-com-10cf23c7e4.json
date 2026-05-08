@@ -1,0 +1,14 @@
+{
+  "bucket": "check-url-live",
+  "key": {
+    "url": "https://www.thisoldhouse.com/decks/21017639/how-to-build-a-deck"
+  },
+  "label": "www.thisoldhouse.com",
+  "recordedAt": "2026-05-05T01:40:08.321Z",
+  "value": {
+    "url": "https://www.thisoldhouse.com/decks/21017639/how-to-build-a-deck",
+    "live": false,
+    "status": 404,
+    "reason": "status=404"
+  }
+}

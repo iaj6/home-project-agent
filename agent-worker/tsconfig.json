@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "outDir": "lib",
+    "rootDirs": [".", "../shared"],
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "@home-advisor/shared": ["../shared/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "scripts/**/*"],
+  "exclude": ["node_modules", "lib", "tests"]
+}

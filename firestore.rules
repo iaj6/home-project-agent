@@ -1,0 +1,59 @@
+rules_version='2'
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function ownsProject(projectId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /homes/{homeId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn()
+        && request.query.limit <= 50
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /projects/{projectId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn()
+        && request.query.limit <= 100
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+
+      match /messages/{messageId} {
+        allow read, list: if ownsProject(projectId);
+        allow write: if false;
+      }
+
+      match /report/{reportId} {
+        allow read: if ownsProject(projectId);
+        allow write: if false;
+      }
+    }
+
+    match /agentRuns/{runId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn()
+        && request.query.limit <= 50
+        && resource.data.userId == request.auth.uid;
+      allow write: if false;
+
+      match /steps/{stepId} {
+        allow read, list: if isSignedIn()
+          && get(/databases/$(database)/documents/agentRuns/$(runId)).data.userId == request.auth.uid;
+        allow write: if false;
+      }
+    }
+  }
+}

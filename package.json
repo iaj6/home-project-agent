@@ -1,0 +1,10 @@
+{
+  "name": "home-advisor",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "functions",
+    "frontend",
+    "agent-worker"
+  ]
+}

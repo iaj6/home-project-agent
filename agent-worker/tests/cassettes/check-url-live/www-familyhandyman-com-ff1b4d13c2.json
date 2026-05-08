@@ -1,0 +1,14 @@
+{
+  "bucket": "check-url-live",
+  "key": {
+    "url": "https://www.familyhandyman.com/list/diy-bathroom-vanity/"
+  },
+  "label": "www.familyhandyman.com",
+  "recordedAt": "2026-05-05T01:40:07.619Z",
+  "value": {
+    "url": "https://www.familyhandyman.com/list/diy-bathroom-vanity/",
+    "live": false,
+    "status": 404,
+    "reason": "status=404"
+  }
+}
