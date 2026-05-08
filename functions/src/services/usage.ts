@@ -8,6 +8,10 @@ export const USAGE_LIMITS = {
   perUserPerDay: 3,
   /** Hard wallet ceiling — agent runs across all users per UTC day. ~$1/run. */
   globalPerDay: 30,
+  /** Runs older than this in queued/running state are treated as stale and
+   *  ignored by the concurrent check. Prevents stuck runs from soft-locking
+   *  the user. Wall-clock budget for a real run is ~15 min. */
+  staleRunMs: 20 * 60 * 1000,
 };
 
 interface DailyUsageDoc {
@@ -33,13 +37,21 @@ export async function assertCanStartRun(userId: string): Promise<void> {
   const globalRef = db.doc(`usage/_global`);
 
   // Concurrent check first — common rejection path, no transaction needed.
+  // We additionally filter out stale runs (CPU throttling, container restart,
+  // etc.) so a stuck run never soft-locks the user.
   const activeRunsSnap = await db
     .collection("agentRuns")
     .where("userId", "==", userId)
     .where("status", "in", ["queued", "running"])
-    .limit(USAGE_LIMITS.perUserConcurrent + 1)
+    .limit(10)
     .get();
-  if (activeRunsSnap.size >= USAGE_LIMITS.perUserConcurrent) {
+  const staleCutoff = Date.now() - USAGE_LIMITS.staleRunMs;
+  const liveActive = activeRunsSnap.docs.filter((d) => {
+    const started = d.get("startedAt");
+    const ms = started?.toMillis ? started.toMillis() : new Date(started).getTime();
+    return ms >= staleCutoff;
+  });
+  if (liveActive.length >= USAGE_LIMITS.perUserConcurrent) {
     throw new HttpsError(
       "resource-exhausted",
       "You already have a project being analyzed. Please wait for it to finish before starting another.",
