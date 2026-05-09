@@ -86,6 +86,17 @@ onMounted(() => {
 
   /* ─── Grid pattern for blueprint effect ─── */
   --grid-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 40 40 0' fill='none' stroke='%23DDD3C5' stroke-width='0.5' opacity='0.4'/%3E%3C/svg%3E");
+  /* Tighter blueprint grid for dark surfaces (title block backgrounds). */
+  --grid-pattern-dark: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 32L32 32 32 0' fill='none' stroke='%23E7C99B' stroke-width='0.4' opacity='0.18'/%3E%3Cpath d='M0 16L32 16M16 0L16 32' fill='none' stroke='%23E7C99B' stroke-width='0.25' opacity='0.10'/%3E%3C/svg%3E");
+  /* Crosshatch for stamps & official-document feel. */
+  --hatch-pattern: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,6 l6,-6 M5,7 l2,-2' stroke='%23B85C38' stroke-width='0.5' opacity='0.35'/%3E%3C/svg%3E");
+  /* Paper grain — barely-there noise for warmth. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.18 0 0 0 0 0.14 0 0 0 0 0.09 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* Drafting accent — a shade of blueprint cyan that complements the warm palette
+   * without dominating it. Used sparingly for technical annotations. */
+  --blueprint-ink: #1F4E5F;
+  --blueprint-ink-soft: rgba(31, 78, 95, 0.12);
 }
 
 *, *::before, *::after {
@@ -98,6 +109,9 @@ body {
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--bg-base);
+  background-image: var(--paper-grain);
+  background-size: 200px 200px;
+  background-attachment: fixed;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

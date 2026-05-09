@@ -16,15 +16,20 @@ async function handleLogout() {
   <header class="app-header">
     <div class="header-inner">
       <div class="left">
-        <span class="logo" @click="router.push('/')">
-          <span class="logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
+        <button class="logo" @click="router.push('/')" aria-label="Home Helper — back to start">
+          <!-- Stamped monogram: blueprint-square + house silhouette -->
+          <span class="logo-mark">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="2" stroke-width="1.4"/>
+              <path d="M6 13l6-5 6 5v6a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z" fill="currentColor" fill-opacity="0.18"/>
+              <path d="M10 20v-4h4v4"/>
             </svg>
           </span>
-          <span class="logo-text">Home Helper</span>
-        </span>
+          <span class="logo-text">
+            <span class="logo-name">Home Helper</span>
+            <span class="logo-tag">DRAFTED BY HANDY</span>
+          </span>
+        </button>
         <nav v-if="authStore.user">
           <button
             :class="{ active: route.path === '/dashboard' }"
@@ -55,10 +60,13 @@ async function handleLogout() {
 <style scoped>
 .app-header {
   background: var(--bg-dark);
+  background-image: var(--grid-pattern-dark);
+  background-size: 28px 28px;
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 3px solid var(--primary);
+  border-bottom: 1px solid rgba(231, 201, 155, 0.18);
+  box-shadow: 0 1px 0 var(--primary), 0 2px 0 rgba(184, 92, 56, 0.4);
 }
 
 .header-inner {
@@ -74,33 +82,58 @@ async function handleLogout() {
 .left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   cursor: pointer;
-  text-decoration: none;
-  transition: opacity 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0.25rem 0.4rem 0.25rem 0;
+  font-family: inherit;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: all 0.18s var(--ease-out);
 }
+.logo:hover { transform: translateX(-1px); }
+.logo:hover .logo-mark { color: #E7C99B; }
 
-.logo:hover {
-  opacity: 0.85;
-}
-
-.logo-icon {
-  color: var(--primary);
-  display: flex;
+.logo-mark {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary-hover);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset, 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: color 0.18s var(--ease-out);
 }
 
 .logo-text {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.logo-name {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.05rem;
   color: var(--text-inverse);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
+}
+.logo-tag {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.56rem;
+  letter-spacing: 0.18em;
+  color: var(--primary-muted);
+  margin-top: 3px;
 }
 
 nav {

@@ -121,19 +121,17 @@ function openFull() {
     </div>
 
     <div v-if="projectStore.currentProject?.status === 'complete'" class="report-banner" @click="router.push(`/project/${projectId}/report`)">
-      <div class="banner-content">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-        <span>Your project report is ready!</span>
+      <span class="rb-stamp">SHEET 01<br>READY</span>
+      <div class="rb-body">
+        <div class="rb-eyebrow">YOUR PROJECT BLUEPRINT</div>
+        <div class="rb-title">Sourced. Priced. Drafted.</div>
+        <div class="rb-sub">Materials cart, labor estimate, ordered task list, code warnings, tutorial videos.</div>
       </div>
-      <button class="banner-btn">
-        View Report
+      <button class="rb-btn">
+        Open blueprint
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
         </svg>
       </button>
     </div>
@@ -247,28 +245,93 @@ function openFull() {
 }
 
 .report-banner {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.75rem 1.25rem;
-  background: var(--success-light);
-  border-bottom: 1px solid rgba(61, 124, 71, 0.15);
-  cursor: pointer; transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem 0.75rem 0.65rem;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  border-left: 4px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.18s var(--ease-out);
+  animation: bannerIn 0.5s var(--ease-out);
 }
-.report-banner:hover { background: #d9f0dc; }
-.banner-content {
-  display: flex; align-items: center; gap: 0.65rem;
-  color: var(--success); font-family: var(--font-heading);
-  font-size: 0.9rem; font-weight: 600;
+.report-banner:hover {
+  background: var(--primary-light);
+  border-left-color: var(--primary-hover);
 }
-.banner-btn {
-  display: flex; align-items: center; gap: 0.35rem;
-  padding: 0.4rem 0.85rem;
-  background: var(--success); color: white;
-  border: none; border-radius: var(--radius-sm);
-  cursor: pointer; font-family: var(--font-heading);
-  font-size: 0.8rem; font-weight: 600;
-  transition: all 0.2s ease;
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.banner-btn:hover { background: #347a3d; }
+.rb-stamp {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  padding: 0.4rem 0.3rem;
+  border: 2px solid var(--primary);
+  border-radius: 4px;
+  background: var(--bg-card);
+  background-image: var(--hatch-pattern);
+  background-blend-mode: multiply;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+  text-align: center;
+  line-height: 1.15;
+  transform: rotate(-3deg);
+}
+.rb-body {
+  flex: 1;
+  min-width: 0;
+}
+.rb-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--primary);
+  margin-bottom: 0.15rem;
+}
+.rb-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 0.15rem;
+}
+.rb-sub {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+.rb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.18s var(--ease-out);
+  box-shadow: 0 1px 0 var(--primary-hover) inset;
+}
+.rb-btn:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateX(2px);
+}
 
 .messages {
   flex: 1; overflow-y: auto; padding: 1.25rem;
