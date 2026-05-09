@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 import { CATEGORIES } from '@home-helper/shared';
 import type { Project } from '@home-helper/shared';
+import { categoryIcon } from '../lib/assets';
 
 const props = defineProps<{
   project: Project;
@@ -32,7 +33,11 @@ function formatDate(date: Date): string {
     <div class="card-body">
       <div class="card-top">
         <div class="icon-wrapper">
-          <span class="icon">{{ CATEGORIES[props.project.category]?.icon }}</span>
+          <img v-if="categoryIcon(props.project.category)"
+            class="icon-img"
+            :src="categoryIcon(props.project.category)!"
+            :alt="CATEGORIES[props.project.category]?.label" />
+          <span v-else class="icon">{{ CATEGORIES[props.project.category]?.icon }}</span>
         </div>
         <span class="status-badge" :class="props.project.status">
           <span class="status-dot"></span>
@@ -101,14 +106,22 @@ function formatDate(date: Date): string {
 }
 
 .icon-wrapper {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-surface);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   font-size: 1.4rem;
+  overflow: hidden;
+}
+.icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
 }
 
 .status-badge {

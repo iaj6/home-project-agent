@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { LOGO_DARK } from '../lib/assets';
 
 const router = useRouter();
 const route = useRoute();
@@ -17,14 +18,8 @@ async function handleLogout() {
     <div class="header-inner">
       <div class="left">
         <button class="logo" @click="router.push('/')" aria-label="Home Helper — back to start">
-          <!-- Stamped monogram: blueprint-square + house silhouette -->
-          <span class="logo-mark">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2.5" y="2.5" width="19" height="19" rx="2" stroke-width="1.4"/>
-              <path d="M6 13l6-5 6 5v6a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z" fill="currentColor" fill-opacity="0.18"/>
-              <path d="M10 20v-4h4v4"/>
-            </svg>
-          </span>
+          <!-- Stamped monogram: blueprint-square + house silhouette (gpt-image) -->
+          <img class="logo-mark" :src="LOGO_DARK" alt="Home Helper" width="36" height="36" />
           <span class="logo-text">
             <span class="logo-name">Home Helper</span>
             <span class="logo-tag">DRAFTED BY HANDY</span>
@@ -102,18 +97,15 @@ async function handleLogout() {
 .logo:hover .logo-mark { color: #E7C99B; }
 
 .logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 36px;
   height: 36px;
-  background: var(--primary);
-  color: white;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--primary-hover);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset, 0 1px 2px rgba(0, 0, 0, 0.4);
-  transition: color 0.18s var(--ease-out);
+  object-fit: contain;
+  /* Slight glow on the cream stamp so it pops on the dark header */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  transition: transform 0.2s var(--ease-out);
 }
+.logo:hover .logo-mark { transform: rotate(-3deg) scale(1.05); }
 
 .logo-text {
   display: flex;

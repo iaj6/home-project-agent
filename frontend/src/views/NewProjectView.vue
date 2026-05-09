@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useProjectStore } from '../stores/project';
 import { CATEGORIES } from '@home-helper/shared';
 import type { ProjectCategory, ExperienceLevel } from '@home-helper/shared';
+import { categoryIcon } from '../lib/assets';
 
 const router = useRouter();
 const projectStore = useProjectStore();
@@ -88,7 +89,8 @@ async function handleSubmit() {
           :class="{ selected: selectedCategory === key }"
           @click="selectedCategory = key as ProjectCategory"
         >
-          <span class="cat-icon">{{ cat.icon }}</span>
+          <img v-if="categoryIcon(key)" class="cat-icon-img" :src="categoryIcon(key)!" :alt="cat.label" />
+          <span v-else class="cat-icon">{{ cat.icon }}</span>
           <div class="cat-info">
             <strong>{{ cat.label }}</strong>
             <span class="cat-desc">{{ cat.description }}</span>
@@ -314,9 +316,26 @@ async function handleSubmit() {
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
+.cat-icon-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  flex-shrink: 0;
+  transition: all 0.2s var(--ease-out);
+}
 
-.category-card.selected .cat-icon {
+.category-card.selected .cat-icon,
+.category-card.selected .cat-icon-img {
   background: rgba(184, 92, 56, 0.1);
+  border-color: var(--primary-muted);
+}
+.category-card:hover:not(.selected) .cat-icon-img {
+  transform: rotate(-2deg);
+  border-color: var(--primary-muted);
 }
 
 .cat-info {

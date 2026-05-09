@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useProjectStore } from '../stores/project';
+import { categoryIcon } from '../lib/assets';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -208,21 +209,21 @@ function viewProjects() {
       </header>
       <div class="cat-row">
         <button class="cat-card" @click="start">
-          <span class="cat-icon">🚿</span>
+          <img class="cat-icon-img" :src="categoryIcon('bathroom-vanity')" alt="Bathroom vanity" />
           <div class="cat-meta">
             <div class="cat-name">Bathroom Vanity</div>
             <div class="cat-sub">Replace or upgrade</div>
           </div>
         </button>
         <button class="cat-card" @click="start">
-          <span class="cat-icon">🏗️</span>
+          <img class="cat-icon-img" :src="categoryIcon('deck-building')" alt="Deck building" />
           <div class="cat-meta">
             <div class="cat-name">Deck Building</div>
             <div class="cat-sub">New build or replacement</div>
           </div>
         </button>
         <div class="cat-card muted">
-          <span class="cat-icon">+</span>
+          <span class="cat-icon-emoji">+</span>
           <div class="cat-meta">
             <div class="cat-name">More to come</div>
             <div class="cat-sub">Kitchen, fence, roofing…</div>
@@ -682,15 +683,32 @@ function viewProjects() {
   cursor: default;
   border-style: dashed;
 }
-.cat-icon {
+.cat-icon-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  flex-shrink: 0;
+  transition: transform 0.2s var(--ease-out);
+}
+.cat-card:hover:not(.muted) .cat-icon-img {
+  transform: rotate(-2deg) scale(1.04);
+  border-color: var(--primary-muted);
+}
+.cat-icon-emoji {
   font-size: 1.6rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   background: var(--bg-surface);
+  border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 .cat-meta { display: flex; flex-direction: column; }
