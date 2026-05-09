@@ -1,4 +1,4 @@
-import type { MaterialsList, PlanDraft } from '@home-advisor/shared';
+import type { MaterialsList, PlanDraft } from '@home-helper/shared';
 import { buildSystemPrompt } from '../prompts/system';
 import { buildPricePrompt } from '../prompts/price';
 import { runPhase } from './loop';

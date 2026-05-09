@@ -1,5 +1,5 @@
 {
-  "name": "@home-advisor/functions",
+  "name": "@home-helper/functions",
   "version": "1.0.0",
   "private": true,
   "main": "lib/functions/src/index.js",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Confidence } from '@home-advisor/shared';
+import type { Confidence } from '@home-helper/shared';
 
 const props = defineProps<{
   level: Confidence;

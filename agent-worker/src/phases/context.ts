@@ -1,4 +1,4 @@
-import type { AgentRunMode, Home, Project } from '@home-advisor/shared';
+import type { AgentRunMode, Home, Project } from '@home-helper/shared';
 
 export interface TokenTally {
   inputTokens: number;

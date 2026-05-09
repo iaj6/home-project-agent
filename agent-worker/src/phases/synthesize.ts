@@ -5,16 +5,16 @@ import type {
   MaterialsList,
   PlanDraft,
   ProjectReport,
-} from '@home-advisor/shared';
+} from '@home-helper/shared';
 import { buildSystemPrompt } from '../prompts/system';
 import { buildSynthesizePrompt } from '../prompts/synthesize';
 import { runPhase } from './loop';
 import { checkUrlLiveTool } from '../tools';
 import type { RunContext } from './context';
-import type { Resource } from '@home-advisor/shared';
+import type { Resource } from '@home-helper/shared';
 import { enrichZip, formatEnrichmentForPrompt } from '../zip/enrichment';
 import { searchYouTubeVideos } from '../services/youtube';
-import { CATEGORIES } from '@home-advisor/shared';
+import { CATEGORIES } from '@home-helper/shared';
 import { SynthesizeOutputSchema } from '../schemas/phase-outputs';
 import type { z } from 'zod/v4';
 

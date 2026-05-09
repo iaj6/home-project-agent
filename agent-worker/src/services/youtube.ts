@@ -1,4 +1,4 @@
-import type { Resource } from '@home-advisor/shared';
+import type { Resource } from '@home-helper/shared';
 import { log } from '../util/logger';
 
 interface YouTubeSearchItem {

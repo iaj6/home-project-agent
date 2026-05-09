@@ -10,7 +10,7 @@ import type {
   ProjectReport,
   ProjectStatus,
   Home,
-} from '@home-advisor/shared';
+} from '@home-helper/shared';
 import { log } from './util/logger';
 
 export async function loadProject(projectId: string): Promise<Project> {

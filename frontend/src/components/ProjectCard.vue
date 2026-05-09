@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { CATEGORIES } from '@home-advisor/shared';
-import type { Project } from '@home-advisor/shared';
+import { CATEGORIES } from '@home-helper/shared';
+import type { Project } from '@home-helper/shared';
 
 const props = defineProps<{
   project: Project;

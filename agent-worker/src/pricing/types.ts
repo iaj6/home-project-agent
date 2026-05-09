@@ -1,4 +1,4 @@
-import type { Retailer } from '@home-advisor/shared';
+import type { Retailer } from '@home-helper/shared';
 
 export interface RetailerProduct {
   retailer: Retailer;

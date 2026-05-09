@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Handy** — an agentic home-project research assistant. The user describes a project, answers a short clarification dialog, and a Claude tool-use loop plans → prices real materials at Home Depot/Lowe's → pulls labor ranges → synthesizes a sourced Project Report with confidence scores. Full vision captured in `PRD.md`. v1 MVP scope covers two categories (bathroom-vanity, deck-building) and two verticals of real-data research (materials + labor).
+**Home Helper** — an agentic home-project planning app. The agent inside it is named **Handy**. The user describes a project, answers a short clarification dialog, and a Claude tool-use loop plans → prices real materials at Home Depot → pulls labor ranges → synthesizes a sourced Project Report with confidence scores. Full vision captured in `PRD.md`. v1 MVP scope covers two categories (bathroom-vanity, deck-building) and two verticals of real-data research (materials + labor). Workspace packages are `@home-helper/*`. (Lowe's pricing was tried and dropped — bot-blocked at every fetcher tier.)
 
 ## Build & Development Commands
 
@@ -38,9 +38,9 @@ cd frontend && npx vue-tsc --noEmit
 
 **Monorepo** using npm workspaces with four packages:
 
-- `shared/` (`@home-advisor/shared`) — TypeScript types + category constants. Source-exposed, no build output.
+- `shared/` (`@home-helper/shared`) — TypeScript types + category constants. Source-exposed, no build output.
 - `functions/` — Firebase Cloud Functions (Node 20, CommonJS). Thin orchestration only. Outputs to `lib/`.
-- `agent-worker/` (`@home-advisor/agent-worker`) — Long-running agent loop (Cloud Run / Docker). Outputs to `lib/`.
+- `agent-worker/` (`@home-helper/agent-worker`) — Long-running agent loop (Cloud Run / Docker). Outputs to `lib/`.
 - `frontend/` — Vue 3 + TypeScript + Vite SPA. Outputs to `dist/`.
 
 ### Cloud Functions — thin orchestration
@@ -104,7 +104,7 @@ Security rules: users can only read their own data; all writes go through admin-
 
 ### Key conventions
 
-- **Shared type imports**: frontend uses `@home-advisor/shared` workspace package. Functions/agent-worker use relative paths via `rootDirs` in tsconfig.
+- **Shared type imports**: frontend uses `@home-helper/shared` workspace package. Functions/agent-worker use relative paths via `rootDirs` in tsconfig.
 - **Firestore dates**: backend stores `Date`. Frontend converts via a `toDate()` helper in `stores/project.ts` that handles both `Timestamp` and raw `Date` shapes.
 - **Resource URL validation**: `services/synthesize.ts` filters resources to the trusted-domain allowlist (familyhandyman, thisoldhouse, finehomebuilding, bobvila, lowes, homedepot). The `check_url_live` tool liveness-probes before citing.
 - **Model IDs**: `claude-sonnet-4-6` for the agent loop + clarification; `claude-haiku-4-5-20251001` available for sub-tasks (not used yet in v1).

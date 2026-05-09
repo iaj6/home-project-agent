@@ -1,5 +1,5 @@
 import { db } from '../config';
-import type { ConversationMessage } from '@home-advisor/shared';
+import type { ConversationMessage } from '@home-helper/shared';
 
 export async function getConversationHistory(projectId: string): Promise<string> {
   const snap = await db

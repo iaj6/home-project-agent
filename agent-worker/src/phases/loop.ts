@@ -3,7 +3,7 @@ import type { ZodType } from 'zod/v4';
 import { AGENT_MODEL, BUDGET, modelCost } from '../config';
 import { callClaude, extractText, extractToolUses } from '../util/claude';
 import { finalizeStep, updateAgentRun, writeStep } from '../firestore';
-import type { AgentPhase } from '@home-advisor/shared';
+import type { AgentPhase } from '@home-helper/shared';
 import type { RunContext } from './context';
 import type { ToolDefinition } from '../tools/types';
 

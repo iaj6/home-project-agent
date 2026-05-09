@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CostSource } from '@home-advisor/shared';
+import type { CostSource } from '@home-helper/shared';
 
 defineProps<{ source: CostSource }>();
 </script>

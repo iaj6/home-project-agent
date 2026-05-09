@@ -1,5 +1,5 @@
 {
-  "name": "@home-advisor/agent-worker",
+  "name": "@home-helper/agent-worker",
   "version": "1.0.0",
   "private": true,
   "main": "lib/server.js",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.93.0",
-    "@home-advisor/shared": "*",
+    "@home-helper/shared": "*",
     "@hono/node-server": "^1.13.0",
     "firebase-admin": "^13.0.0",
     "hono": "^4.6.0",

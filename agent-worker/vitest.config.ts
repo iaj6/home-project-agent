@@ -4,7 +4,7 @@ import * as path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
-      '@home-advisor/shared': path.resolve(__dirname, '../shared/src/index.ts'),
+      '@home-helper/shared': path.resolve(__dirname, '../shared/src/index.ts'),
     },
   },
   test: {

@@ -45,8 +45,8 @@ async function handleSubmit() {
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
         </div>
-        <h1 class="brand-name">Home Advisor</h1>
-        <p class="tagline">Your AI-powered home improvement partner.<br>Plan smarter. Build with confidence.</p>
+        <h1 class="brand-name">Home Helper</h1>
+        <p class="tagline">Plan a real home project with real prices and real sources.<br>Powered by Handy, your agentic workshop assistant.</p>
       </div>
 
       <!-- Login Card -->

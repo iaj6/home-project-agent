@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import type { AgentPhase, AgentRun, AgentStep } from '@home-advisor/shared';
+import type { AgentPhase, AgentRun, AgentStep } from '@home-helper/shared';
 
 const props = defineProps<{
   run: AgentRun | null;

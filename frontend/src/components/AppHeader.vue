@@ -23,7 +23,7 @@ async function handleLogout() {
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </span>
-          <span class="logo-text">Home Advisor</span>
+          <span class="logo-text">Home Helper</span>
         </span>
         <nav v-if="authStore.user">
           <button

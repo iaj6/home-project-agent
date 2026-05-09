@@ -1,4 +1,4 @@
-import type { Project, ProjectReport } from '@home-advisor/shared';
+import type { Project, ProjectReport } from '@home-helper/shared';
 
 const now = new Date('2026-05-08T18:00:00Z');
 

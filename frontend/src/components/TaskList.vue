@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TaskItem } from '@home-advisor/shared';
+import type { TaskItem } from '@home-helper/shared';
 
 defineProps<{
   tasks: TaskItem[];

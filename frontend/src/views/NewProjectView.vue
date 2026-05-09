@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProjectStore } from '../stores/project';
-import { CATEGORIES } from '@home-advisor/shared';
-import type { ProjectCategory, ExperienceLevel } from '@home-advisor/shared';
+import { CATEGORIES } from '@home-helper/shared';
+import type { ProjectCategory, ExperienceLevel } from '@home-helper/shared';
 
 const router = useRouter();
 const projectStore = useProjectStore();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Tradeoffs } from '@home-advisor/shared';
+import type { Tradeoffs } from '@home-helper/shared';
 
 defineProps<{ tradeoffs: Tradeoffs }>();
 </script>

@@ -1,6 +1,8 @@
-# home-project-agent
+# Home Helper
 
-A working demonstration of an agentic home-improvement project planner. Describe a project → answer a few clarifying questions → watch a four-phase Claude tool-use loop run live, pulling real Home Depot prices and regional labor cost ranges → land on a sourced project blueprint with materials, tasks, tradeoffs, and tutorial videos.
+An agentic home-improvement project planner. The agent inside it — named **Handy** — describes your project, asks a few clarifying questions, then runs a four-phase Claude tool-use loop live, pulling real Home Depot prices and regional labor cost ranges. You land on a sourced project blueprint with materials, tasks, tradeoffs, and tutorial videos.
+
+(Repo is named `home-project-agent` for now since the product name was decided after the repo was created.)
 
 **Live demo:** [home-helper-706a8.web.app](https://home-helper-706a8.web.app)
 

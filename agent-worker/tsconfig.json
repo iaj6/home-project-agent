@@ -15,7 +15,7 @@
     "types": ["node"],
     "lib": ["ES2022", "DOM"],
     "paths": {
-      "@home-advisor/shared": ["../shared/src/index.ts"]
+      "@home-helper/shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src/**/*", "scripts/**/*"],

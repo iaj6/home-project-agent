@@ -1,4 +1,4 @@
-import type { LaborEstimate, PlanDraft } from '@home-advisor/shared';
+import type { LaborEstimate, PlanDraft } from '@home-helper/shared';
 import { buildSystemPrompt } from '../prompts/system';
 import { buildLaborPrompt } from '../prompts/labor';
 import { runPhase } from './loop';

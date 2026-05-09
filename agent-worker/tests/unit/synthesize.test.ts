@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { clamp, normalizeCostSummary, normalizeConfidence } from '../../src/phases/synthesize';
-import type { LaborEstimate, MaterialsList } from '@home-advisor/shared';
+import type { LaborEstimate, MaterialsList } from '@home-helper/shared';
 
 const makeMaterials = (resolved: number, total: number): MaterialsList => ({
   items: Array.from({ length: total }, (_, i) => ({

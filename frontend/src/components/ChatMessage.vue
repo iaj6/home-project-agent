@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConversationMessage } from '@home-advisor/shared';
+import type { ConversationMessage } from '@home-helper/shared';
 
 const props = defineProps<{
   message: ConversationMessage;

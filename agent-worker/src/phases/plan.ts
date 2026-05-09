@@ -1,4 +1,4 @@
-import type { PlanDraft } from '@home-advisor/shared';
+import type { PlanDraft } from '@home-helper/shared';
 import { buildSystemPrompt } from '../prompts/system';
 import { buildPlanPrompt } from '../prompts/plan';
 import { runPhase } from './loop';

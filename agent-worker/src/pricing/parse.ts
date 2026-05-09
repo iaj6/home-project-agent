@@ -1,4 +1,4 @@
-import type { Retailer } from '@home-advisor/shared';
+import type { Retailer } from '@home-helper/shared';
 import type { RetailerProduct } from './types';
 
 const HOSTS: Record<Retailer, string> = {

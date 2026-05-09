@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@home-advisor/shared": ["../shared/src"]
+      "@home-helper/shared": ["../shared/src"]
     },
     "rootDirs": ["src", "../shared/src"]
   },

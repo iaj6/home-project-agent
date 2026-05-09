@@ -1,4 +1,4 @@
-import type { AgentRunMode } from '@home-advisor/shared';
+import type { AgentRunMode } from '@home-helper/shared';
 import {
   createAgentRun,
   finalizeStep,

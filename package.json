@@ -1,5 +1,5 @@
 {
-  "name": "home-advisor",
+  "name": "home-helper",
   "private": true,
   "workspaces": [
     "shared",

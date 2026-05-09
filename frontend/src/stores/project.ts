@@ -18,7 +18,7 @@ import type {
   Project,
   ProjectReport,
   StartProjectInput,
-} from '@home-advisor/shared';
+} from '@home-helper/shared';
 
 function toDate(v: unknown): Date {
   if (v instanceof Date) return v;
