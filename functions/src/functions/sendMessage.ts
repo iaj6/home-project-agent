@@ -3,7 +3,7 @@ import { db, ANTHROPIC_API_KEY_SECRET } from "../config";
 import { getClarificationResponse } from "../services/claude";
 import { addMessage, getMessages } from "../services/conversation";
 import { enqueueAgentRun } from "../services/agentRun";
-import { assertCanStartRun } from "../services/usage";
+import { assertCanStartRun, assertCanSendMessage } from "../services/usage";
 import type { Project } from "../../../shared/src/index";
 
 const REPORT_READY_RE = /<report_ready>\s*true\s*<\/report_ready>/i;
@@ -41,6 +41,10 @@ export const sendMessage = onCall({ secrets: [ANTHROPIC_API_KEY_SECRET] }, async
       `Project is not in clarifying phase (status=${project.status})`,
     );
   }
+
+  // Cap conversation length BEFORE we add the user's message — otherwise the
+  // attacker has already won by getting Claude to write a free reply.
+  await assertCanSendMessage(projectId, project.messageCount ?? 0);
 
   await addMessage(projectId, "user", message, "clarification");
 

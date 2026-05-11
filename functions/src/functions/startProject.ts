@@ -3,6 +3,7 @@ import { db, ANTHROPIC_API_KEY_SECRET } from "../config";
 import { getClarificationResponse } from "../services/claude";
 import { addMessage } from "../services/conversation";
 import { ensureHome } from "../services/home";
+import { assertCanStartProject } from "../services/usage";
 import type {
   Project,
   ProjectCategory,
@@ -31,6 +32,11 @@ export const startProject = onCall({ secrets: [ANTHROPIC_API_KEY_SECRET] }, asyn
   }
 
   const userId = request.auth.uid;
+
+  // Wallet guardrail: cap project creation per user + globally before we
+  // spend a clarification Claude call.
+  await assertCanStartProject(userId);
+
   const homeId = input.homeId ?? (await ensureHome(userId, input.zipCode));
 
   const projectRef = db.collection("projects").doc();

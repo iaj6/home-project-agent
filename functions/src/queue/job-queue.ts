@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions";
+import { GoogleAuth } from "google-auth-library";
 
 const logger = functions.logger;
 
@@ -15,23 +16,68 @@ export interface JobQueue {
 }
 
 class LocalHttpJobQueue implements JobQueue {
+  // Audience URL = the worker base URL with no path. Cached on the auth
+  // client so we don't pay for token minting on every call.
+  private auth: GoogleAuth = new GoogleAuth();
+  private clientCache: Promise<unknown> | null = null;
+
   constructor(private readonly workerUrl: string) {}
+
+  private async getClient() {
+    if (!this.clientCache) {
+      // getIdTokenClient mints a Google-signed OIDC ID token whose audience
+      // is the Cloud Run service URL. The Cloud Run service must require
+      // IAM auth (`--no-allow-unauthenticated`) and grant our compute SA
+      // `roles/run.invoker` for the token to be accepted.
+      this.clientCache = this.auth.getIdTokenClient(this.workerUrl);
+    }
+    return this.clientCache;
+  }
 
   async publishAgentRun(job: AgentRunJobPayload): Promise<void> {
     try {
-      const res = await fetch(`${this.workerUrl}/agent-run`, {
+      const url = `${this.workerUrl}/agent-run`;
+      // In the Firebase emulator the worker is on http://127.0.0.1:8787
+      // with no auth — skip the ID token there so local dev still works.
+      const isEmulator = this.workerUrl.startsWith("http://127.0.0.1")
+        || this.workerUrl.startsWith("http://localhost");
+      if (isEmulator) {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(job),
+        });
+        if (!res.ok) {
+          logger.warn("agent-worker returned non-ok on publish", {
+            status: res.status,
+            runId: job.runId,
+          });
+        }
+        return;
+      }
+
+      const client = (await this.getClient()) as {
+        request: (opts: {
+          url: string;
+          method: string;
+          data: unknown;
+          headers?: Record<string, string>;
+        }) => Promise<{ status: number }>;
+      };
+      const res = await client.request({
+        url,
         method: "POST",
+        data: job,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(job),
       });
-      if (!res.ok) {
+      if (res.status < 200 || res.status >= 300) {
         logger.warn("agent-worker returned non-ok on publish", {
           status: res.status,
           runId: job.runId,
         });
       }
     } catch (err: unknown) {
-      logger.error("failed to publish to local agent-worker", {
+      logger.error("failed to publish to agent-worker", {
         error: err instanceof Error ? err.message : String(err),
         runId: job.runId,
       });

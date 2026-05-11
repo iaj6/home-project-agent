@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { through } from '../cassette/cassette';
 import { BUDGET } from '../config';
+import { assertPublicUrl, UnsafeUrlError } from '../util/url-safety';
 import type { ToolDefinition } from './types';
 
 const CheckUrlLiveInput = z.object({
@@ -15,6 +16,14 @@ export interface CheckUrlLiveOutput {
 }
 
 async function probe(url: string): Promise<CheckUrlLiveOutput> {
+  try {
+    assertPublicUrl(url);
+  } catch (err) {
+    if (err instanceof UnsafeUrlError) {
+      return { url, live: false, status: 0, reason: err.message };
+    }
+    throw err;
+  }
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), BUDGET.urlLivenessTimeoutMs);
   try {

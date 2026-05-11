@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { through } from '../cassette/cassette';
 import { fetchHtml } from '../pricing/fetcher';
+import { assertPublicUrl, UnsafeUrlError } from '../util/url-safety';
 import type { ToolDefinition } from './types';
 
 const FetchUrlInput = z.object({
@@ -22,6 +23,7 @@ const MAX_BYTES = 500_000;
 
 async function fetchPage(url: string, renderJs?: boolean): Promise<FetchUrlOutput> {
   try {
+    assertPublicUrl(url);
     const result = await fetchHtml(url, { renderJs: renderJs ?? false });
     const truncated = result.html.length > MAX_BYTES;
     const text = truncated ? result.html.slice(0, MAX_BYTES) : result.html;
@@ -38,7 +40,7 @@ async function fetchPage(url: string, renderJs?: boolean): Promise<FetchUrlOutpu
     const message = err instanceof Error ? err.message : String(err);
     return {
       url,
-      status: 0,
+      status: err instanceof UnsafeUrlError ? 403 : 0,
       contentType: 'error',
       text: '',
       truncated: false,
