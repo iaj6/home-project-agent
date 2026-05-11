@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TaskItem } from '@home-helper/shared';
+import { renderInline } from '../lib/markdown';
 
 defineProps<{
   tasks: TaskItem[];
@@ -33,7 +34,7 @@ function difficultyColor(difficulty: TaskItem['difficulty']): string {
             </span>
           </div>
         </div>
-        <p class="task-description">{{ task.description }}</p>
+        <p class="task-description" v-html="renderInline(task.description)"></p>
         <div class="task-meta">
           <span class="task-hours">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ConversationMessage } from '@home-helper/shared';
+import { renderInline } from '../lib/markdown';
 
 const props = defineProps<{
   message: ConversationMessage;
@@ -8,12 +10,20 @@ const props = defineProps<{
 function formatTime(date: Date): string {
   return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+// User messages render as literal text — someone might write `**` in
+// their own message and we shouldn't interpret it. Assistant messages get
+// the inline-markdown pass for bold/code, which Claude actually emits.
+const renderedHtml = computed(() =>
+  props.message.role === 'assistant' ? renderInline(props.message.content) : null,
+);
 </script>
 
 <template>
   <div class="chat-message" :class="props.message.role">
     <div class="bubble">
-      <p class="content">{{ props.message.content }}</p>
+      <p v-if="renderedHtml" class="content" v-html="renderedHtml"></p>
+      <p v-else class="content">{{ props.message.content }}</p>
       <span class="time">{{ formatTime(props.message.createdAt) }}</span>
     </div>
   </div>
@@ -71,6 +81,27 @@ function formatTime(date: Date): string {
   white-space: pre-wrap;
   line-height: 1.55;
   font-size: 0.925rem;
+}
+.content :deep(strong) {
+  font-weight: 700;
+  color: inherit;
+}
+.assistant .content :deep(strong) {
+  color: var(--primary-hover);
+}
+.content :deep(code) {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+.user .content :deep(code) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-inverse);
 }
 
 .time {

@@ -9,6 +9,7 @@ import LaborEstimate from '../components/LaborEstimate.vue';
 import TradeoffCard from '../components/TradeoffCard.vue';
 import ConfidenceBadge from '../components/ConfidenceBadge.vue';
 import { SAMPLE_PROJECT, SAMPLE_REPORT } from '../data/sample-report';
+import { renderInline } from '../lib/markdown';
 
 const route = useRoute();
 const router = useRouter();
@@ -178,7 +179,7 @@ function jumpTo(id: string) {
           <div class="tb-identity">
             <div class="tb-eyebrow">PROJECT BLUEPRINT</div>
             <h1 class="tb-title">{{ project?.title }}</h1>
-            <p class="tb-summary">{{ report.summary }}</p>
+            <p class="tb-summary" v-html="renderInline(report.summary)"></p>
             <div class="tb-tags">
               <span class="tb-tag">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -354,7 +355,7 @@ function jumpTo(id: string) {
         </header>
         <div v-for="(warning, idx) in report.warnings" :key="idx" class="alert alert-warning">
           <span class="alert-mark">!</span>
-          <span>{{ warning }}</span>
+          <span v-html="renderInline(warning)"></span>
         </div>
       </section>
 
@@ -367,7 +368,7 @@ function jumpTo(id: string) {
         </header>
         <div v-for="(tip, idx) in report.tips" :key="idx" class="alert alert-tip">
           <span class="alert-mark">★</span>
-          <span>{{ tip }}</span>
+          <span v-html="renderInline(tip)"></span>
         </div>
       </section>
 
@@ -380,7 +381,7 @@ function jumpTo(id: string) {
         </header>
         <div class="card-section">
           <ul class="caveats">
-            <li v-for="(caveat, idx) in report.confidence.caveats" :key="idx">{{ caveat }}</li>
+            <li v-for="(caveat, idx) in report.confidence.caveats" :key="idx" v-html="renderInline(caveat)"></li>
           </ul>
         </div>
       </section>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Tradeoffs } from '@home-helper/shared';
+import { renderInline } from '../lib/markdown';
 
 defineProps<{ tradeoffs: Tradeoffs }>();
 </script>
@@ -14,7 +15,7 @@ defineProps<{ tradeoffs: Tradeoffs }>();
           </svg>
           <span>Quality</span>
         </div>
-        <p>{{ tradeoffs.quality }}</p>
+        <p v-html="renderInline(tradeoffs.quality)"></p>
       </div>
       <div class="axis">
         <div class="axis-label">
@@ -24,7 +25,7 @@ defineProps<{ tradeoffs: Tradeoffs }>();
           </svg>
           <span>Time</span>
         </div>
-        <p>{{ tradeoffs.time }}</p>
+        <p v-html="renderInline(tradeoffs.time)"></p>
       </div>
       <div class="axis">
         <div class="axis-label">
@@ -34,7 +35,7 @@ defineProps<{ tradeoffs: Tradeoffs }>();
           </svg>
           <span>Money</span>
         </div>
-        <p>{{ tradeoffs.money }}</p>
+        <p v-html="renderInline(tradeoffs.money)"></p>
       </div>
     </div>
     <div v-if="tradeoffs.recommendation" class="rec">
@@ -45,7 +46,7 @@ defineProps<{ tradeoffs: Tradeoffs }>();
         </svg>
         <span>Recommendation</span>
       </div>
-      <p>{{ tradeoffs.recommendation }}</p>
+      <p v-html="renderInline(tradeoffs.recommendation ?? '')"></p>
     </div>
   </div>
 </template>
