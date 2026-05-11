@@ -4,6 +4,7 @@ import { getClarificationResponse } from "../services/claude";
 import { addMessage } from "../services/conversation";
 import { ensureHome } from "../services/home";
 import { assertCanStartProject } from "../services/usage";
+import { assertStringField } from "../services/input-limits";
 import type {
   Project,
   ProjectCategory,
@@ -21,15 +22,14 @@ export const startProject = onCall({ secrets: [ANTHROPIC_API_KEY_SECRET] }, asyn
   if (!input.category || !CATEGORY_IDS.includes(input.category as ProjectCategory)) {
     throw new HttpsError("invalid-argument", "A valid category is required");
   }
-  if (!input.title || typeof input.title !== "string") {
-    throw new HttpsError("invalid-argument", "Title is required");
-  }
-  if (!input.description || typeof input.description !== "string") {
-    throw new HttpsError("invalid-argument", "Description is required");
-  }
-  if (!input.zipCode || typeof input.zipCode !== "string") {
-    throw new HttpsError("invalid-argument", "Zip code is required");
-  }
+  // Length-capped + trimmed. These bound both context-stuffing attacks and
+  // copy-paste injection payloads. Real user input is well under the caps.
+  const title = assertStringField(input.title, "title");
+  const description = assertStringField(input.description, "description");
+  const zipCode = assertStringField(input.zipCode, "zipCode");
+  input.title = title;
+  input.description = description;
+  input.zipCode = zipCode;
 
   const userId = request.auth.uid;
 

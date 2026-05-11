@@ -4,6 +4,7 @@ import { getClarificationResponse } from "../services/claude";
 import { addMessage, getMessages } from "../services/conversation";
 import { enqueueAgentRun } from "../services/agentRun";
 import { assertCanStartRun, assertCanSendMessage } from "../services/usage";
+import { assertStringField } from "../services/input-limits";
 import type { Project } from "../../../shared/src/index";
 
 const REPORT_READY_RE = /<report_ready>\s*true\s*<\/report_ready>/i;
@@ -13,14 +14,15 @@ export const sendMessage = onCall({ secrets: [ANTHROPIC_API_KEY_SECRET] }, async
     throw new HttpsError("unauthenticated", "Must be logged in");
   }
 
-  const { projectId, message } = request.data as {
+  const { projectId, message: rawMessage } = request.data as {
     projectId: string;
     message: string;
   };
 
-  if (!projectId || !message) {
-    throw new HttpsError("invalid-argument", "projectId and message are required");
+  if (!projectId) {
+    throw new HttpsError("invalid-argument", "projectId is required");
   }
+  const message = assertStringField(rawMessage, "message");
 
   const projectRef = db.doc(`projects/${projectId}`);
   const projectSnap = await projectRef.get();

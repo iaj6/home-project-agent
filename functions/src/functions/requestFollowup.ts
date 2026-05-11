@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db } from "../config";
 import { enqueueAgentRun } from "../services/agentRun";
 import { assertCanStartRun } from "../services/usage";
+import { assertStringField } from "../services/input-limits";
 import type { Project } from "../../../shared/src/index";
 
 export const requestFollowup = onCall(async (request) => {
@@ -9,14 +10,15 @@ export const requestFollowup = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Must be logged in");
   }
 
-  const { projectId, question } = request.data as {
+  const { projectId, question: rawQuestion } = request.data as {
     projectId: string;
     question: string;
   };
 
-  if (!projectId || !question) {
-    throw new HttpsError("invalid-argument", "projectId and question are required");
+  if (!projectId) {
+    throw new HttpsError("invalid-argument", "projectId is required");
   }
+  const question = assertStringField(rawQuestion, "question");
 
   const projectSnap = await db.doc(`projects/${projectId}`).get();
   if (!projectSnap.exists) {
