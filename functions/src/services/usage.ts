@@ -77,8 +77,12 @@ export async function assertCanStartRun(userId: string): Promise<void> {
     const userData = userSnap.exists ? (userSnap.data() as DailyUsageDoc) : null;
     const globalData = globalSnap.exists ? (globalSnap.data() as DailyUsageDoc) : null;
 
-    const userToday = userData && userData.day === day ? userData.runsToday : 0;
-    const globalToday = globalData && globalData.day === day ? globalData.runsToday : 0;
+    // ?? 0 because the doc may exist with only projectsToday set (if the user
+    // created a project earlier today before kicking off any agent runs).
+    // Bare access would yield undefined, then undefined+1=NaN, corrupting the
+    // counter into a never-hit-cap state. Caught by tests.
+    const userToday = userData && userData.day === day ? (userData.runsToday ?? 0) : 0;
+    const globalToday = globalData && globalData.day === day ? (globalData.runsToday ?? 0) : 0;
 
     if (userToday >= USAGE_LIMITS.perUserPerDay) {
       throw new HttpsError(
