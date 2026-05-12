@@ -41,7 +41,7 @@ You'll need:
 - **Firebase CLI** (`npm install -g firebase-tools`)
 - **gcloud CLI** (for the Cloud Run agent-worker deploy)
 - **Anthropic API key**
-- **Crawlbase token** (free tier works) — for HD pricing
+- **Crawlbase token** — for HD pricing. New accounts get 1,000 free credits up front (one-time, not monthly). Each agent run uses ~20 credits, so the free allocation is enough for ~50 test runs. After that, pay-as-you-go (~$0.04/run at current rates).
 - **YouTube Data API key** (free tier 10k/day) — for tutorial videos in reports
 - Optional: **ScrapingBee API key** if you want the second-tier fetcher
 

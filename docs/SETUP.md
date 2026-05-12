@@ -16,7 +16,7 @@ If you'd rather hand this to an LLM, see [`CLAUDE-PROMPTS.md`](CLAUDE-PROMPTS.md
 
 API keys to gather:
 - **Anthropic API key** — https://console.anthropic.com/
-- **Crawlbase token** — https://crawlbase.com/ (free tier is fine for testing). The free tier has 1000 requests; each agent run uses ~20.
+- **Crawlbase token** — https://crawlbase.com/. New accounts get a one-time 1,000-credit grant (not an ongoing monthly free tier). Each agent run uses ~20 credits, so the free allocation covers ~50 test runs. After that, the Crawling API is pay-per-success (~$0.04/run at current rates). Use the **plain** token for HD, not the JS token — the JS tier triggers a stricter bot check on Akamai.
 - **YouTube Data API v3 key** — see step 5 below
 - Optional: **ScrapingBee API key** — only if you want a fallback to Crawlbase for retailers
 
