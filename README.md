@@ -1,79 +1,87 @@
 # Home Helper
 
-An agentic home-improvement project planner. The agent inside it — named **Handy** — describes your project, asks a few clarifying questions, then runs a four-phase Claude tool-use loop live, pulling real Home Depot prices and regional labor cost ranges. You land on a sourced project blueprint with materials, tasks, tradeoffs, and tutorial videos.
+An agentic home-improvement project planner. Describe a project, watch a four-phase Claude tool-use loop run live (plan → price real materials at Home Depot → labor cost ranges → synthesize), land on a sourced **Project Blueprint** with materials, tasks, tradeoffs, and tutorial videos.
 
-(Repo is named `home-project-agent` for now since the product name was decided after the repo was created.)
+The product is a wrapper. The interesting stuff is the engineering underneath — see [`WRITEUP.md`](WRITEUP.md) for the pattern walkthrough.
 
-**Live demo:** [home-helper-706a8.web.app](https://home-helper-706a8.web.app)
+> **Live demo:** [home-helper-706a8.web.app](https://home-helper-706a8.web.app)
+> **Status:** fun POC, not a startup. MIT licensed.
 
-The product side is a fun POC, not a startup. The interesting parts are the engineering choices — see below.
+---
 
-## What it actually does
+## Quick reference
 
-Given a category (deck-building or bathroom-vanity), a ZIP, and a one-sentence description, the agent:
-
-1. **Plans** — breaks the project into tasks, materials list, and an open-questions list. Pure reasoning, no tools.
-2. **Prices** — for each generic material, runs a Home Depot search via Crawlbase, parses real SKUs + prices + product URLs.
-3. **Labor** — pulls cost-guide ranges from HomeAdvisor and Fixr; layers a state-level regional multiplier from ZIP.
-4. **Synthesizes** — emits a structured `ProjectReport` with cost summary, tradeoffs, confidence scoring, and code-aware warnings. A post-hoc YouTube enrichment step appends 4 tutorial videos.
-
-Every step streams to Firestore in real time; the Vue frontend subscribes via `onSnapshot` so the user watches the agent think rather than staring at a spinner.
-
-## Engineering highlights
-
-- **Anthropic structured outputs** — every phase emits JSON via `output_config.format` + a Zod schema. No "ask Claude for JSON, hope it parses" prompt-and-pray. See `agent-worker/src/schemas/phase-outputs.ts` and `src/util/claude.ts`.
-- **Cassette record/replay** — `agent-worker/src/cassette/cassette.ts` lets every external tool call (Crawlbase, HomeAdvisor, YouTube, Anthropic) be recorded once and replayed in tests. CI never hits real services.
-- **Three-layer scraper fallback** — Crawlbase → ScrapingBee → bare Playwright+stealth. See `agent-worker/src/pricing/fetcher.ts`. Crawlbase plain token cleanly bypasses Akamai on Home Depot; Lowe's was blocked by every tier and is dropped.
-- **ZIP enrichment** — state, frost-depth, climate band, coastal flag fed into plan + synthesize prompts so Claude doesn't hallucinate climate facts. See `agent-worker/src/zip/enrichment.ts`.
-- **Cost-cap usage gate** — per-user concurrent limit, per-user daily limit, global daily limit. Enforced in Firestore via a transaction before every agent enqueue. See `functions/src/services/usage.ts`.
-- **Anonymous auth** — zero-friction landing; UID persists in localStorage.
-
-## Stack
-
-- `shared/` — TypeScript types, category constants, Zod-friendly. Dual exports (TS source for Vite, compiled CJS for Node).
-- `functions/` — Firebase Cloud Functions v2. Thin orchestration: clarification dialog, project CRUD, agent-run enqueue.
-- `agent-worker/` — Long-running agent (Hono + tsx in dev, Node 20 in prod). Deployed to Cloud Run.
-- `frontend/` — Vue 3 + Vite. Pinia stores, vue-router, Firebase JS SDK, scoped CSS.
-
-## Run locally
-
-```bash
-npm install                                # workspace install
-
-# in three terminals
-firebase emulators:start --only firestore,auth,functions --project home-helper-706a8
-cd agent-worker && npm run dev             # tsx watch on :8787
-cd frontend && npm run dev                 # Vite on :5177
+```
+shared/         TypeScript types + category constants (dual exports)
+functions/      Firebase Cloud Functions v2 — thin orchestration + usage gate
+agent-worker/   Long-running Claude tool-use loop, deployed to Cloud Run
+frontend/       Vue 3 + Vite SPA
+scripts/        Helpers (asset generation, curl smoke tests)
 ```
 
-Required env: `functions/.env.local` with `ANTHROPIC_API_KEY`, `CRAWLBASE_TOKEN`, `CRAWLBASE_JS_TOKEN`, `YOUTUBE_API_KEY`. Both functions and agent-worker pick these up.
+What's interesting if you're poking around:
 
-For tests:
+| Path | What it does |
+|---|---|
+| `agent-worker/src/phases/loop.ts` | Generic Anthropic tool-use driver used by all four phases |
+| `agent-worker/src/schemas/phase-outputs.ts` | Zod schemas that drive `output_config.format` structured outputs |
+| `agent-worker/src/cassette/cassette.ts` | Record/replay harness for every external call |
+| `agent-worker/src/pricing/fetcher.ts` | Crawlbase → ScrapingBee → Playwright fallback chain |
+| `agent-worker/src/util/url-safety.ts` | SSRF guard for Claude-supplied URLs |
+| `functions/src/services/usage.ts` | Cost-cap layer (per-user/global daily caps, stale-run filter) |
+| `functions/src/queue/job-queue.ts` | OIDC service-to-service auth Functions → Cloud Run |
+| `functions/src/prompts/system.ts` | Hardened clarification prompt (off-topic + injection refusals) |
+
+---
+
+## Want to run it yourself?
+
+You'll need:
+- **Node 20** (Cloud Functions requires it; agent-worker is fine on newer)
+- **Firebase CLI** (`npm install -g firebase-tools`)
+- **gcloud CLI** (for the Cloud Run agent-worker deploy)
+- **Anthropic API key**
+- **Crawlbase token** (free tier works) — for HD pricing
+- **YouTube Data API key** (free tier 10k/day) — for tutorial videos in reports
+- Optional: **ScrapingBee API key** if you want the second-tier fetcher
+
+Two paths from here:
+
+### Path A — read the code, don't run it
+
+Most of the engineering content is readable straight from the repo. Start with [`WRITEUP.md`](WRITEUP.md), then poke at the file paths in the table above. The agent loop, structured outputs migration, and money-guardrail tests are the highest-density bits.
+
+### Path B — clone, configure, deploy your own
+
+See [`docs/SETUP.md`](docs/SETUP.md) for the end-to-end runbook. Step-by-step instructions for creating your own Firebase project, dropping in keys, running local emulators, and deploying to Cloud Run + Firebase Hosting under your own GCP account.
+
+There's also [`docs/CLAUDE-PROMPTS.md`](docs/CLAUDE-PROMPTS.md) — a set of ready-to-use prompts for [Claude Code](https://claude.ai/code) if you'd rather hand the setup off to an agent. Open the repo in your editor with Claude Code installed and paste one of the prompts.
+
+---
+
+## Local development
+
+After setup (see `docs/SETUP.md`), three terminals:
 
 ```bash
-cd agent-worker && npm test                # 28 tests, all cassette-backed
+firebase emulators:start --only firestore,auth,functions   # Firebase emulators
+cd agent-worker && PORT=8787 npm run dev                   # agent-worker on :8787
+cd frontend && npm run dev                                  # Vite on :5177
 ```
 
-## Deploy
+Open http://localhost:5177 and an anonymous session auto-signs in.
+
+## Tests
 
 ```bash
-# agent-worker → Cloud Run (uses repo-root Dockerfile)
-gcloud run deploy agent-worker --source . --region us-central1 --no-cpu-throttling \
-  --update-secrets ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,CRAWLBASE_TOKEN=CRAWLBASE_TOKEN:latest,CRAWLBASE_JS_TOKEN=CRAWLBASE_JS_TOKEN:latest,YOUTUBE_API_KEY=YOUTUBE_API_KEY:latest
-
-# functions + firestore + hosting
-firebase deploy --project home-helper-706a8
+cd agent-worker && npm test    # 49 tests
+cd functions && npm test       # 38 tests
 ```
 
-`functions/.env.home-helper-706a8` (gitignored) sets `AGENT_WORKER_URL` to the Cloud Run URL.
+Highest-value areas (financial logic, SSRF guard, OIDC token minting) all have coverage. See `WRITEUP.md` for the time the tests caught a critical NaN bug in the cost cap.
 
-## Status
+## License
 
-- ✅ End-to-end working in production at the URL above
-- ✅ Two categories: `deck-building`, `bathroom-vanity`
-- ⏳ Coming: UI polish pass with custom assets, project rename
-- ❌ Not planned: contractor discovery, payments, multi-user collaboration
+MIT. Use it, fork it, learn from it.
 
-## Writeup
-
-Notes on the build are coming.
+This is a personal project. No support promised, no roadmap, no PRs gatekept. If you find a bug or build something interesting on top, open an issue or a PR and I'll look.

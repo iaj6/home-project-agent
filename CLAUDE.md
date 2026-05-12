@@ -38,7 +38,7 @@ cd frontend && npx vue-tsc --noEmit
 
 **Monorepo** using npm workspaces with four packages:
 
-- `shared/` (`@home-helper/shared`) — TypeScript types + category constants. Source-exposed, no build output.
+- `shared/` (`@home-helper/shared`) — TypeScript types + category constants. Dual-export package.json: Vite imports source TS, Node imports compiled `dist/` (via `tsc` build step).
 - `functions/` — Firebase Cloud Functions (Node 20, CommonJS). Thin orchestration only. Outputs to `lib/`.
 - `agent-worker/` (`@home-helper/agent-worker`) — Long-running agent loop (Cloud Run / Docker). Outputs to `lib/`.
 - `frontend/` — Vue 3 + TypeScript + Vite SPA. Outputs to `dist/`.
@@ -68,7 +68,7 @@ Entry point: `agent-worker/src/server.ts` (Hono HTTP on :8787). Accepts POST `/a
 
 **Phases** (each in `src/phases/`):
 1. **Plan** — no tools, pure reasoning. Produces `PlanDraft` (tasks + generic materials list + open questions).
-2. **Price** — tools: `fetch_home_depot_sku`, `fetch_lowes_sku`. Resolves each generic material to a real SKU + price.
+2. **Price** — tools: `fetch_home_depot_sku`. Resolves each generic material to a real SKU + price. (`fetch_lowes_sku` is implemented but removed from the registered tool set — Lowe's is blocked across all three fetcher tiers; the code stays for one-line re-enable.)
 3. **Labor** — tools: `fetch_cost_guide`, `fetch_url`. Pulls HomeAdvisor/Fixr ranges + regional multiplier.
 4. **Synthesize** — tool: `check_url_live`. Produces final `ProjectReport` with cost summary, tradeoffs, confidence.
 
@@ -80,9 +80,11 @@ The phase loop (`src/phases/loop.ts`) implements a generic Anthropic tool-use lo
 - `agentRuns/{runId}/steps` — live activity trace (every `think` / `tool_call` / `tool_result`).
 - `projects/{id}/report/main` — report doc appears atomically on completion.
 
-### Pricing — DIY Playwright + stealth
+### Pricing — three-tier fetcher chain
 
-`agent-worker/src/pricing/{home-depot,lowes}.ts` use Playwright + `puppeteer-extra-plugin-stealth`. Parser in `src/pricing/parse.ts` tries three strategies in order: `__NEXT_DATA__` JSON extraction, `application/ld+json` blocks, then a regex fallback for product cards. Everything goes through `src/cassette/cassette.ts` so tests/CI run against recorded HTML without real browser work.
+`agent-worker/src/pricing/fetcher.ts` resolves the fetcher at runtime based on which env vars are set: **Crawlbase → ScrapingBee → bare Playwright+stealth**. Empirically Crawlbase's plain token bypasses HD's Akamai challenge cleanly while bare Playwright hits a silent 200-status challenge page. Lowe's is blocked at every tier.
+
+Parser in `src/pricing/parse.ts` tries three strategies in order: `__NEXT_DATA__` JSON extraction, `application/ld+json` blocks, then a regex fallback for product cards. Everything goes through `src/cassette/cassette.ts` so tests/CI run against recorded HTML without real network work.
 
 ### Cassette harness
 

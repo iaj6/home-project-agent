@@ -6,7 +6,7 @@
 //        firebase emulators:start --only firestore,auth,functions
 //   2. In this terminal:
 //        FIRESTORE_EMULATOR_HOST=127.0.0.1:8402 \
-//        GCLOUD_PROJECT=home-helper-706a8 \
+//        GCLOUD_PROJECT=<your-firebase-project-id> \
 //        ANTHROPIC_API_KEY=sk-... \
 //        AGENT_QUEUE=local \
 //        tsx agent-worker/scripts/smoke-agent.ts
@@ -15,8 +15,13 @@
 // runs the agent in-process, then prints the final report summary.
 import * as admin from 'firebase-admin';
 
+const projectId = process.env.GCLOUD_PROJECT;
+if (!projectId) {
+  console.error('GCLOUD_PROJECT env var is required (your Firebase project ID).');
+  process.exit(1);
+}
 if (!admin.apps.length) {
-  admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT ?? 'home-helper-706a8' });
+  admin.initializeApp({ projectId });
 }
 const db = admin.firestore();
 db.settings({ ignoreUndefinedProperties: true });
