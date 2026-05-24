@@ -1,0 +1,50 @@
+═══════════════════════════════════════════════════════════════════
+  BUG #3 · CUMULATIVE BUDGET · synthesize got zero turns
+═══════════════════════════════════════════════════════════════════
+
+  Symptom:
+
+    Error: Phase synthesize ended without parsed_output.
+    stop_reason may indicate refusal or max_tokens; finalText=
+                                                              ↑
+                                                              empty.
+                                              Never made a Claude call.
+
+  What happened:
+
+    plan       →  ~12k input tokens
+    price      → ~220k input tokens  (16 HD pages × 1.5MB each
+                                      = ~24MB of HTML in tool
+                                      results, ~210k tokens)
+    labor      →  ~18k input tokens
+    ─────────────────────────────────
+    cumulative →  ~250k input tokens  ← hit BUDGET.maxInputTokens
+
+    synthesize → first guard in runPhase:
+
+        if (ctx.tokenTally.inputTokens >= BUDGET.maxInputTokens) {
+          ctx.budgetExhausted = true;
+          break;       // ← exits before iteration 1
+        }
+
+      Loop exits with parsedOutput=undefined, finalText="".
+
+  What the OLD code did:
+    Same loop break. But the forced-finalization branch ran
+    OUTSIDE the budget guard too. The extra call was producing
+    the entire synthesize phase. I thought I had a 4-phase loop;
+    I actually had a 3-phase loop + a stealth phase.
+
+  Cause:
+    BUDGET.maxInputTokens = 250_000. Defensive on day 1; too
+    defensive once real HD pages started flowing through.
+
+  Fix:
+    agent-worker/src/config.ts:
+
+       BUDGET = {
+         maxToolCalls: 40,
+    -    maxInputTokens: 250_000,
+    +    maxInputTokens: 1_000_000,   // Sonnet's full context
+         maxWallClockMs: 15 * 60 * 1000,
+       };

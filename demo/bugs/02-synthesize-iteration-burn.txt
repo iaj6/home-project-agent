@@ -1,0 +1,34 @@
+═══════════════════════════════════════════════════════════════════
+  BUG #2 · SYNTHESIZE PHASE · maxIterations burned on URL probing
+═══════════════════════════════════════════════════════════════════
+
+  Symptom:
+
+    Error: Phase synthesize ended without parsed_output.
+    stop_reason may indicate refusal or max_tokens; finalText=
+
+  What happened (trace from the actual run):
+
+    synthesize.turn1 → check_url_live × 5 (parallel) ← burned iter 1
+    synthesize.turn2 → check_url_live × 3 (replacing dead URLs) ← iter 2
+    synthesize.turn3 → check_url_live × 2 (still hunting) ← iter 3
+    synthesize → maxIterations exceeded, never reached final emit
+
+  What the OLD code did:
+    Old loop hit the same "no parsed JSON" condition. But the
+    forced-finalization branch ran OUTSIDE the loop's iteration
+    cap. It made a final tool-free call to Claude. That extra
+    call produced the entire report. The agent was making 11+
+    Claude calls per synthesize; I thought it was making 1.
+
+  Cause:
+    Synthesize was given a check_url_live tool to validate URLs
+    before citing them. Real agent decided to validate every URL
+    in the report's resources section. Death by 1,000 cuts.
+
+  Fix:
+    1. Remove check_url_live from synthesize's tool set (now
+       tool-free; emits in turn 1).
+    2. Move URL liveness checking to a post-hoc Promise.all in
+       code, after synthesize emits — see filterLiveResources()
+       in agent-worker/src/phases/synthesize.ts.

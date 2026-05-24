@@ -1,0 +1,30 @@
+═══════════════════════════════════════════════════════════════════
+  BUG #1 · PLAN PHASE · max_tokens=4096 truncating output mid-array
+═══════════════════════════════════════════════════════════════════
+
+  Symptom (post-migration, in the new code):
+
+    Error: Phase plan ended without parsed_output. stop_reason may
+    indicate refusal or max_tokens; finalText=
+      {"summary":"Full tear-out and replacement of an existing
+       12x18 ft attached deck in Mashpee, MA...","
+       complexityScore":7,"diyFeasibilityScore":5,
+       "estimatedDuration":"3-4 weekends",
+       "tasks":[
+         {"name":"Permits & Site Planning"...
+                                          ^^^^^^
+                                          (truncated mid-array)
+
+  What the OLD code did:
+    extractJson() found the first { and the last }, sliced between
+    them, JSON.parse'd. Got a partial object missing 6 materials.
+    Plan continued with the partial. No one noticed.
+
+  Cause:
+    agent-worker/src/phases/plan.ts had no explicit maxTokens
+    override → fell through to the loop default of 4096. Adequate
+    for the smoke project. Not for richer ones.
+
+  Fix:
+    plan.ts → { maxTokens: 16000, ... }
+                                       (Sonnet caps at 64k output)
