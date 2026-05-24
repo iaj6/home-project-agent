@@ -6,12 +6,28 @@
 
 ---
 
+## The five beats — cue card
+
+| Time | Beat | Cue |
+|---|---|---|
+| 0:00 → 0:30 | Hook | Browser at `/sample` |
+| 0:30 → 1:30 | The duct tape | Editor cmd-1 (before-claude.ts) |
+| 1:30 → 2:30 | The deletion + new pattern | Editor cmd-2 → cmd-3 |
+| 2:30 → 4:05 | Three bugs (35s / 35s / 25s) | Terminal `cat demo/bugs/0[1,2,3].txt` |
+| 4:05 → 4:30 | Cassettes — the workshop | Editor cmd-4, then terminal `ls` |
+| 4:30 → 5:00 | Takeaway + repo URL | Terminal, then browser tab to GitHub |
+
+Print this. Glance once at the 2:30 mark.
+
+---
+
 ## Setup before you go on stage
 
-1. **Editor open.** Cursor / VS Code. Font size **24pt minimum**. Dark theme. Three tabs pre-opened, in this order (so cmd-1/2/3 navigates):
+1. **Editor open.** Cursor / VS Code. Font size **24pt minimum**. Dark theme. Four tabs pre-opened, in this order (so cmd-1/2/3/4 navigates):
    - `demo/before-claude.ts`
    - `agent-worker/src/util/claude.ts`
    - `agent-worker/src/schemas/phase-outputs.ts`
+   - `agent-worker/src/cassette/cassette.ts`  (scrolled to line ~46, the `through()` function)
 2. **Browser open.** Two tabs:
    - `https://home-helper-706a8.web.app/sample` — the sample blueprint
    - GitHub repo page (for the close — `iaj6/home-project-agent`)
@@ -101,24 +117,43 @@ cat demo/bugs/02-synthesize-iteration-burn.txt
 
 > "I'd given synthesize a `check_url_live` tool. It was using all 3 iterations checking URLs in the report's resources section — never reached the final emit. The old forced-finalization branch ran AFTER the loop, OUTSIDE the iteration cap. That extra call was producing the entire report. Fix: removed `check_url_live` from the agent's tool set. URL liveness is now a Promise.all post-hoc filter in code — `agent-worker/src/phases/synthesize.ts`."
 
-#### Bug 3 — Cumulative input-token budget (3:40 → 4:15)
+#### Bug 3 — Cumulative input-token budget (3:40 → 4:05)
 
-> "Bug 3. Different run. New code threw 'phase ended without parsed_output' at synthesize again — different cause."
+> "Bug 3. Different run. Same error. Different cause: cumulative input-token budget exhausted before synthesize started."
 
 **Run:**
 ```bash
 cat demo/bugs/03-budget-exhaustion.txt
 ```
 
-> "Cumulative input-token budget across phases was 250k. The price phase fetches 16 HD product pages at ~1.5MB each — Crawlbase returns the full HTML. By the time synthesize starts, budget is exhausted. Loop's first guard kicks the synthesize phase out before its first turn. Old forced-finalization ran outside this guard too. Fix: bumped to 1M, Sonnet's full context. `agent-worker/src/config.ts` — BUDGET.maxInputTokens."
+> "Price phase fetches 16 HD product pages, ~1.5MB each — Crawlbase returns the full HTML. By the time synthesize starts, budget's gone. Loop's first guard kicks it out before iteration 1. Old forced-finalization ran outside this guard too. Fix: bumped to 1M, Sonnet's full context. `agent-worker/src/config.ts` — `BUDGET.maxInputTokens`."
 
-**Pause. ~4:15.**
+**Pause. ~4:05.**
 
 ---
 
-### Beat 5 · Takeaway (4:15 → 5:00) — *terminal, then browser*
+### Beat 4.5 · Cassettes — the workshop behind the bug story (4:05 → 4:30) — *editor + terminal*
 
-> "One pattern across three bugs: every retry path I had was bypassing the normal budget and iteration controls. Each retry was a hidden working branch that masked the actual failure."
+> "Quick aside before the takeaway. How I was iterating fast enough to find these bugs at all."
+
+**Screen:** cmd-4 to `agent-worker/src/cassette/cassette.ts`. Cursor on the `through()` function at ~line 46.
+
+> "Cassettes. Every external call — Crawlbase, HomeAdvisor, YouTube, Anthropic itself — goes through this one wrapper. `through(bucket, key, realFn)`. Record mode hits the real API once and writes the response to disk."
+
+**Switch to terminal. Run:**
+```bash
+ls agent-worker/tests/cassettes/home-depot-html/ | head -6
+```
+
+> "Replay mode reads from disk. Means I migrated to structured outputs against real recorded Claude responses for **zero dollars**. If you're building agents, this is harder to retrofit than to start with. Day one."
+
+**Pause. ~4:30. Stay in the terminal for the takeaway.**
+
+---
+
+### Beat 5 · Takeaway (4:30 → 5:00) — *terminal, then browser*
+
+> "One pattern across all three bugs: every retry path was bypassing the budget checks. Each was a hidden working branch."
 
 > "Takeaway: when an LLM-output retry path exists, log how often it fires. If 'often,' it's not a safety net — it's glaucoma. You're losing the signal that something's wrong."
 
@@ -151,4 +186,5 @@ Likely questions:
 - **"Why not just use better tests?"** → Tests test the code paths you write. The bugs were in the paths the retry hid. Adding tests for the retry branch would have passed. The fix is removing the branch, not testing it.
 - **"How do you handle cost?"** → Per-user daily cap (5 runs), global daily cap (75 runs), per-user concurrent (1, with a stale-run filter). Plus input-length caps to bound context stuffing. `functions/src/services/usage.ts`.
 - **"How do you stream the agent live?"** → Agent writes step docs to Firestore. Frontend subscribes via `onSnapshot`. No SSE. No polling. Cloud Run on `--no-cpu-throttling` so the async runAgent keeps making progress after the 202 returns.
+- **"Tell me more about the cassettes"** (likely follow-up to the 4:05 aside) → `through(bucket, key, realFn)` keys on the function inputs (URL + query + ZIP). Mode is env-var driven: `CASSETTE_MODE=record` writes JSON files, `replay` reads them, `off` is the production default. Cassettes live in `agent-worker/tests/cassettes/` bucketed per tool. Lets the unit-test suite run in <1s against real recorded HD HTML, real recorded Claude responses. Re-record when an external source's response shape drifts.
 - **"Open source?"** → Yes, MIT, link's up there.
