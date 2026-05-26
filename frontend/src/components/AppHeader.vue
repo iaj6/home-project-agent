@@ -39,13 +39,13 @@ async function handleLogout() {
       <div v-if="authStore.user" class="right">
         <span v-if="authStore.user.email" class="email">{{ authStore.user.email }}</span>
         <span v-else class="email muted">guest session</span>
-        <button class="logout-btn" @click="handleLogout">
+        <button class="logout-btn" @click="handleLogout" aria-label="Sign out">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          Sign Out
+          <span class="logout-text">Sign Out</span>
         </button>
       </div>
     </div>
@@ -189,5 +189,32 @@ nav button.active {
   background: var(--bg-dark-lighter);
   color: var(--text-inverse);
   border-color: rgba(255,255,255,0.2);
+}
+
+@media (max-width: 640px) {
+  .header-inner {
+    padding: 0 0.75rem;
+    height: 56px;
+    gap: 0.5rem;
+  }
+  .left { gap: 0.75rem; min-width: 0; }
+  .right { gap: 0.4rem; }
+
+  .logo { gap: 0.5rem; padding: 0.25rem 0.2rem 0.25rem 0; }
+  .logo-mark { width: 30px; height: 30px; }
+  .logo-name { font-size: 0.95rem; }
+  .logo-tag { display: none; }
+
+  nav { gap: 0.15rem; }
+  nav button {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .email { display: none; }
+
+  .logout-btn { padding: 0.35rem 0.5rem; }
+  .logout-text { display: none; }
 }
 </style>
