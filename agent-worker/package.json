@@ -23,7 +23,7 @@
     "@home-helper/shared": "*",
     "@hono/node-server": "^1.13.0",
     "firebase-admin": "^13.0.0",
-    "hono": "^4.6.0",
+    "hono": "^4.12.21",
     "playwright": "^1.49.0",
     "playwright-extra": "^4.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
