@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      # shared first: the other workspaces import its build output.
+      - run: npm -w shared run build
+      - run: npm -w functions run build
+      - run: npm -w functions test
+      - run: npm -w agent-worker run typecheck
+      - run: npm -w agent-worker test
+      - run: npm -w frontend run build
